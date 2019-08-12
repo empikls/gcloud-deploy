@@ -4,5 +4,6 @@ Terrafrom GKE cluster, Postgres DB installation
 * Use Terrafrom v0.12.6 version minimum
 * Configuration variables can be changed in files:
   ```shell
+  variables.tf
   main.tf
   ```

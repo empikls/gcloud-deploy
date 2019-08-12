@@ -1,5 +1,5 @@
 provider "google" {
-  credentials = "${file("~/.gcloud/gcpssproject-248009-54dc60693c76.json")}"
+  credentials = "${file(var.gloud_creds_file)}"
   project     = "${var.project_name}"
   region      = "${var.location}"
 }
@@ -42,7 +42,7 @@ resource "google_container_cluster" "primary" {
   location    = "${var.location}"
 
   remove_default_node_pool = true
-  initial_node_count = "${var.initial_node_count}"
+  initial_node_count = 1
 
   master_auth {
     username = ""
