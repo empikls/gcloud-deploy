@@ -39,25 +39,26 @@ resource "google_container_cluster" "primary" {
   name        = "${var.cluster_name}"
   project     = "${var.project_name}"
   description = "Demo GKE Cluster"
-  location    = "${var.location}"
+  location    = "${var.location}-b"
 
   remove_default_node_pool = true
   initial_node_count = 1
 
   master_auth {
-    username = ""
-    password = ""
+    username = "wax1DLtRu8"
+    password = "z6Gv5L4Rwb7H42zX"
 
-    client_certificate_config {
-      issue_client_certificate = false
-    }
+//    client_certificate_config {
+////      issue_client_certificate = true
+//      issue_client_certificate = false
+//    }
   }
 }
 
 resource "google_container_node_pool" "primary" {
   name       = "${var.cluster_name}-node-pool"
   project     = "${var.project_name}"
-  location   = "${var.location}"
+  location   = "${var.location}-b"
   cluster    = "${google_container_cluster.primary.name}"
   node_count = 1
 
@@ -65,11 +66,13 @@ resource "google_container_node_pool" "primary" {
     preemptible  = true
     machine_type = "${var.machine_type}"
 
-    metadata = {
-      disable-legacy-endpoints = "true"
-    }
+//    metadata = {
+//      disable-legacy-endpoints = "true"
+//    }
 
     oauth_scopes = [
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_only",
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
     ]
@@ -84,21 +87,43 @@ provider "kubernetes" {
   cluster_ca_certificate = "${base64decode(google_container_cluster.primary.master_auth.0.cluster_ca_certificate)}"
 }
 
+data "template_file" "kubeconfig" {
+  template = file("kubeconfig-template.yaml")
+
+  vars = {
+    cluster_name    = google_container_cluster.primary.name
+    user_name       = google_container_cluster.primary.master_auth[0].username
+    user_password   = google_container_cluster.primary.master_auth[0].password
+    endpoint        = google_container_cluster.primary.endpoint
+    cluster_ca      = google_container_cluster.primary.master_auth[0].cluster_ca_certificate
+    client_cert     = google_container_cluster.primary.master_auth[0].client_certificate
+    client_cert_key = google_container_cluster.primary.master_auth[0].client_key
+  }
+}
+
+resource "local_file" "kubeconfig" {
+  content  = data.template_file.kubeconfig.rendered
+  filename = "kubeconfig"
+}
+
 resource "kubernetes_namespace" "prod" {
   metadata {
     name = "prod"
   }
+  depends_on = ["google_container_node_pool.primary"]
 }
 
 resource "kubernetes_namespace" "dev" {
   metadata {
     name = "dev"
   }
+  depends_on = ["google_container_node_pool.primary"]
 }
 
 resource "kubernetes_namespace" "jenkins" {
   metadata {
     name = "jenkins"
   }
+  depends_on = ["google_container_node_pool.primary"]
 }
 

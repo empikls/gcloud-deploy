@@ -17,3 +17,5 @@ output "k8_client_key" {
 output "k8_ca_cert" {
   value = "${google_container_cluster.primary.master_auth.0.cluster_ca_certificate}"
 }
+
+
