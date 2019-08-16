@@ -40,18 +40,14 @@ resource "google_container_cluster" "primary" {
   project     = "${var.project_name}"
   description = "Demo GKE Cluster"
   location    = "${var.location}-b"
+  min_master_version = "${var.kubernetes_ver}"
 
   remove_default_node_pool = true
   initial_node_count = 1
 
   master_auth {
-    username = "wax1DLtRu8"
-    password = "z6Gv5L4Rwb7H42zX"
-
-//    client_certificate_config {
-////      issue_client_certificate = true
-//      issue_client_certificate = false
-//    }
+    username = "random_id.username.hex"
+    password = "random_id.password.hex"
   }
 }
 
@@ -66,9 +62,9 @@ resource "google_container_node_pool" "primary" {
     preemptible  = true
     machine_type = "${var.machine_type}"
 
-//    metadata = {
-//      disable-legacy-endpoints = "true"
-//    }
+    metadata = {
+      disable-legacy-endpoints = "true"
+    }
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/compute",
@@ -127,3 +123,15 @@ resource "kubernetes_namespace" "jenkins" {
   depends_on = ["google_container_node_pool.primary"]
 }
 
+resource "null_resource" "configure_tiller_jenkins" {
+  provisioner "local-exec" {
+    command = <<LOCAL_EXEC
+kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
+kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
+kubectl apply -f create-jenkins-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
+helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
+helm install --name jenkins --namespace jenkins -f jenkins-chart.yaml stable/jenkins --wait --kubeconfig=${local_file.kubeconfig.filename}
+LOCAL_EXEC
+  }
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.jenkins"]
+}

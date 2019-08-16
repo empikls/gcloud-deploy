@@ -20,6 +20,10 @@ master:
     - locale:1.4
     - ant:1.9
     - pam-auth:1.5.1
+  
+  serviceAccount:
+    create: false
+    name: jenkins-sa  
 
   servicePort: 8080
   serviceType: NodePort
