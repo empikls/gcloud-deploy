@@ -38,6 +38,7 @@ master:
 agent:
   enabled: true
   image: "comarada/jenkins-slave-doc-py"
+  #image: "jenkins/jnlp-slave"
   tag: "v0.2"
   resources:
     requests:
