@@ -20,6 +20,11 @@ master:
     - locale:1.4
     - ant:1.9
     - pam-auth:1.5.1
+    - docker-workflow:1.19
+    - docker-plugin:1.1.7
+#    - google-login:1.6
+#    - google-container-registry-auth:0.3
+#    - google-oauth-plugin:0.8
   
   serviceAccount:
     create: false
@@ -32,7 +37,8 @@ master:
 
 agent:
   enabled: true
-  image: "jenkins/jnlp-slave"
+  image: "comarada/jenkins-slave-doc-py"
+  tag: "v0.2"
   resources:
     requests:
       cpu: null
@@ -40,6 +46,11 @@ agent:
     limits:
       cpu: null
       memory: null
+  volumes: 
+    - type: HostPath
+      mountPath: /var/run/docker.sock
+      hostPath: /var/run/docker.sock
+ 
 
 #to allow jenkins create slave pods
 rbac:
