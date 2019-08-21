@@ -5,8 +5,8 @@ master:
 
   overwriteConfig: true
 
-  adminUser: aDjkaldmin
-  adminPassword: dj!k0d2okdliaulew
+  adminUser: jadmin
+  adminPassword: ItCiF4CF/U/uH2qG
 
   installPlugins:
     - kubernetes:1.18.1
@@ -55,25 +55,13 @@ master:
             <strategy class="jenkins.branch.OrganizationChildOrphanedItemsProperty$Inherit"/>
           </jenkins.branch.OrganizationChildOrphanedItemsProperty>
           <jenkins.branch.OrganizationChildTriggersProperty>
-            <templates/>
+            <templates>
+              <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.9">
+                <spec>H H/4 * * *</spec>
+                <interval>86400000</interval>
+              </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+            </templates>
           </jenkins.branch.OrganizationChildTriggersProperty>
-          <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@6.9">
-            <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
-              <entry>
-                <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.2.1">
-                  <specifications/>
-                </com.cloudbees.plugins.credentials.domains.Domain>
-                <java.util.concurrent.CopyOnWriteArrayList>
-                  <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl plugin="credentials@2.2.1">
-                    <id>githuborg</id>
-                    <description>githuborg</description>
-                    <username>ansh-shmyg</username>
-                    <password>XXXXXXXXXXXX</password>
-                  </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
-                </java.util.concurrent.CopyOnWriteArrayList>
-              </entry>
-            </domainCredentialsMap>
-          </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
           <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.3.9">
             <dockerLabel></dockerLabel>
             <registry plugin="docker-commons@1.15"/>
@@ -108,7 +96,7 @@ master:
         <navigators>
           <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@2.5.6">
             <repoOwner>kv-053-devops</repoOwner>
-            <credentialsId>githuborg</credentialsId>
+            <credentialsId>githuborg-sec</credentialsId>
             <traits>
               <org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
                 <strategyId>1</strategyId>

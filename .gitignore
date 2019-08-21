@@ -8,7 +8,7 @@
 # Crash log files
 crash.log
 kubeconfig
-jenkins-chart.yaml
+#jenkins-chart.yaml
 .ansiblevault
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
