@@ -102,6 +102,7 @@ resource "kubernetes_secret" "credentials" {
   data = {
     "credentials.xml" = "${file("${path.module}./credentials-jenk/credentials.xml")}"
   }
+  depends_on = ["kubernetes_namespace.jenkins"]
 }
 
 resource "kubernetes_secret" "secrets" {
@@ -114,6 +115,7 @@ resource "kubernetes_secret" "secrets" {
     "master.key" = "${file("${path.module}./credentials-jenk/secrets/master.key")}"
     "secret.key" = "${file("${path.module}./credentials-jenk/secret.key")}"
   }
+  depends_on = ["kubernetes_namespace.jenkins"]
 }
 
 resource "null_resource" "configure_tiller_jenkins" {
