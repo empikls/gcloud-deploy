@@ -9,6 +9,10 @@ variable "gloud_creds_file" {
   default = "~/.gcloud/gcpssproject-248009-54dc60693c76.json"
 }
 
+variable "storage_creds_file" {
+  default = "~/.gcloud/google-storage-admin.json"
+}
+
 variable "location" {
   default = "europe-west1"
 }

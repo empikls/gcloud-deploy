@@ -105,15 +105,14 @@ resource "kubernetes_secret" "credentials" {
   depends_on = ["kubernetes_namespace.jenkins"]
 }
 
-resource "kubernetes_secret" "secrets" {
+resource "kubernetes_secret" "jenkins-gcr-json" {
   metadata {
-    name = "secrets"
+    name = "jenkins-gcr-json"
     namespace = "jenkins"
   }
 
   data = {
-    "master.key" = "${file("${path.module}./credentials-jenk/secrets/master.key")}"
-    "secret.key" = "${file("${path.module}./credentials-jenk/secret.key")}"
+    "jenkins-gcr.json" = "${file ("${var.storage_creds_file}")}"
   }
   depends_on = ["kubernetes_namespace.jenkins"]
 }
@@ -121,6 +120,7 @@ resource "kubernetes_secret" "secrets" {
 resource "null_resource" "configure_tiller_jenkins" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
+kubectl --namespace=jenkins --kubeconfig=kubeconfig create secret generic secrets --from-file=${path.module}./credentials-jenk/secrets/master.key  --from-file=${path.module}./credentials-jenk/secrets/hudson.util.Secret
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-jenkins-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
