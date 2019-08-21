@@ -20,15 +20,15 @@ variable "machine_type" {
 
 // Database configuration
 variable "database_instance_name" {
-  default = "main-postgres-db"
+  default = "main-postgres"
 }
 
 variable "database_prod_user_pass" {
-  default = "x"
+  default = "8c7yoI66pd"
 }
 
 variable "database_test_user_pass" {
-  default = "x"
+  default = "8c7yoI66pd"
 }
 
 variable "kubernetes_ver" {

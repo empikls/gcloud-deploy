@@ -8,6 +8,18 @@ Terrafrom GKE cluster, Postgres DB installation
   ```shell
   variables.tf
   ```
+## Before start
+* Prepre Jenskins Chart file for Helm. Copy example file to and name it as "jenkins-chart.yaml"
+  ```
+  cp jenkins-chart-example.yaml jenkins-chart.yaml
+  ```
+* Set GitHub user name, password in file "jenkins-chart.yaml". Open it, find and change section:
+  ```shell
+                      <description>githuborg</description>
+                    <username>git-hub-user</username>
+                    <password>git-hub-password</password>
+  ```
+
 ## How to run
 * Create Google service accout for terraform
 * Set variables in variables.tf :

@@ -14,7 +14,8 @@ spec:
         run: demo
     spec:
       containers:
-      - image: nginx:latest
+      - image: ubuntu:latest
+      #- image: nginx:latest
         imagePullPolicy: IfNotPresent
         name: demo
         ports:

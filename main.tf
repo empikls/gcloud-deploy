@@ -4,37 +4,6 @@ provider "google" {
   region      = "${var.location}"
 }
 
-#resource "google_sql_database_instance" "postgres" {
-#  name = "${var.database_instance_name}"
-#  database_version = "POSTGRES_9_6"
-#  settings {
-#    tier = "db-f1-micro"
-#  }
-#}
-#
-#
-#resource "google_sql_database" "database-prod" {
-#  name      = "prod-db"
-#  instance  = "${google_sql_database_instance.postgres.name}"
-#}
-#
-#resource "google_sql_database" "database-test" {
-#  name      = "test-db"
-#  instance  = "${google_sql_database_instance.postgres.name}"
-#}
-#
-#resource "google_sql_user" "users-prod" {
-#  name     = "postgres"
-#  instance = "${google_sql_database_instance.postgres.name}"
-#  password = "${var.database_prod_user_pass}"
-#}
-#
-#resource "google_sql_user" "users-test" {
-#  name     = "postgres-test"
-#  instance = "${google_sql_database_instance.postgres.name}"
-#  password = "${var.database_test_user_pass}"
-#}
-
 resource "google_container_cluster" "primary" {
   name        = "${var.cluster_name}"
   project     = "${var.project_name}"
@@ -46,8 +15,8 @@ resource "google_container_cluster" "primary" {
   initial_node_count = 1
 
   master_auth {
-    username = "random_id.username.hex"
-    password = "random_id.password.hex"
+    username = "${random_id.username.hex}"
+    password = "${random_id.password.hex}"
   }
 }
 
@@ -78,9 +47,10 @@ resource "google_container_node_pool" "primary" {
 
 provider "kubernetes" {
   host = "https://${google_container_cluster.primary.endpoint}"
-  client_certificate = "${base64decode(google_container_cluster.primary.master_auth.0.client_certificate)}"
-  client_key = "${base64decode(google_container_cluster.primary.master_auth.0.client_key)}"
   cluster_ca_certificate = "${base64decode(google_container_cluster.primary.master_auth.0.cluster_ca_certificate)}"
+  username = "${random_id.username.hex}"
+  password = "${random_id.password.hex}"
+  
 }
 
 data "template_file" "kubeconfig" {
@@ -121,6 +91,29 @@ resource "kubernetes_namespace" "jenkins" {
     name = "jenkins"
   }
   depends_on = ["google_container_node_pool.primary"]
+}
+
+resource "kubernetes_secret" "credentials" {
+  metadata {
+    name = "scredentials"
+    namespace = "jenkins" 
+  }
+
+  data = {
+    "credentials.xml" = "${file("${path.module}./credentials-jenk/credentials.xml")}"
+  }
+}
+
+resource "kubernetes_secret" "secrets" {
+  metadata {
+    name = "secrets"
+    namespace = "jenkins"
+  }
+
+  data = {
+    "master.key" = "${file("${path.module}./credentials-jenk/secrets/master.key")}"
+    "secret.key" = "${file("${path.module}./credentials-jenk/secret.key")}"
+  }
 }
 
 resource "null_resource" "configure_tiller_jenkins" {
