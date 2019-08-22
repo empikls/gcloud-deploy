@@ -9,15 +9,12 @@ Terrafrom GKE cluster, Postgres DB installation
   variables.tf
   ```
 ## Before start
-* Prepre Jenskins Chart file for Helm. Copy example file to and name it as "jenkins-chart.yaml"
-  ```
-  cp jenkins-chart-example.yaml jenkins-chart.yaml
-  ```
-* Set GitHub user name, password in file "jenkins-chart.yaml". Open it, find and change section:
-  ```shell
-                      <description>githuborg</description>
-                    <username>git-hub-user</username>
-                    <password>git-hub-password</password>
+* Prepre Jenskins Chart file for Helm. Open file  "jenkins-chart.yaml" and change admin passrod if needed.
+* Unpack tar archive credentials-jenk.tar.gz into the upper directory. You should have directory structure similar to:
+  ``` 
+  $ ls -l 
+  gcloud-deploy <-- terraform git repository
+  credentials-jenk <-- unpacked credentials-jenk.tar.gz 
   ```
 
 ## How to run
