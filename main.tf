@@ -28,7 +28,7 @@ resource "google_container_node_pool" "primary" {
   node_count = 2
 
   node_config {
-    preemptible  = true
+    preemptible  = false
     machine_type = "${var.machine_type}"
 
     metadata = {

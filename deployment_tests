@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testing
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testing
+  template:
+    metadata:
+      labels:
+        app: testing
+    spec:
+      hostname: testing
+      containers:
+      - name: testing
+        image: ubuntu:latest
+        ports:
+        - containerPort: 22
+      restartPolicy: Always

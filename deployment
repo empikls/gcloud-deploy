@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logicapp
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logicapp
+  template:
+    metadata:
+      labels:
+        app: logicapp
+    spec:
+      hostname: logicapp
+      containers:
+      - name: logicapp
+        image: eu.gcr.io/gcpssproject-248009/logicapp:2
+        ports:
+        - containerPort: 5002
+        args: ['0.0.0.0', '5002','http://queryapp:5003/query/yml_data']
+      restartPolicy: Always
