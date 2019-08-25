@@ -28,7 +28,7 @@ resource "google_container_node_pool" "primary" {
   node_count = 2
 
   node_config {
-    preemptible  = false
+    preemptible  = true
     machine_type = "${var.machine_type}"
 
     metadata = {
@@ -113,6 +113,7 @@ resource "kubernetes_secret" "jenkins-gcr-json" {
 
   data = {
     "jenkins-gcr.json" = "${file ("${var.storage_creds_file}")}"
+    "gclod_project_name.txt"     = "${var.project_name}"
   }
   depends_on = ["kubernetes_namespace.jenkins"]
 }
@@ -120,7 +121,7 @@ resource "kubernetes_secret" "jenkins-gcr-json" {
 resource "null_resource" "configure_tiller_jenkins" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
-kubectl --namespace=jenkins --kubeconfig=kubeconfig create secret generic secrets --from-file=${path.module}./credentials-jenk/secrets/master.key  --from-file=${path.module}./credentials-jenk/secrets/hudson.util.Secret
+kubectl --namespace=jenkins --kubeconfig=kubeconfig create secret generic secrets --from-file=${path.module}./credentials-jenk/secrets/master.key  --from-file=${path.module}./credentials-jenk/secrets/hudson.util.Secret --from-literal=gclod_project_name.txt=${var.project_name}
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-jenkins-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
