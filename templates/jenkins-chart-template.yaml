@@ -6,7 +6,7 @@ master:
   overwriteConfig: true
 
   adminUser: jadmin
-  adminPassword: 210bec102693aacb0e9bed36b3071ff8eb14bace66e94e9d
+  adminPassword: ${jenkins_password}
 
   installPlugins:
     - kubernetes:1.18.1
