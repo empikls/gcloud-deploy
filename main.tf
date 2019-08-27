@@ -120,6 +120,17 @@ resource "kubernetes_secret" "credentials" {
   depends_on = ["kubernetes_namespace.jenkins"]
 }
 
+resource "kubernetes_config_map" "jenkins-example" {
+  metadata {
+    name = "jenkins-vars"
+    namespace = "jenkins"
+  }
+
+  data = {
+    gcloud-project = "${var.project_name}"
+  }
+}
+
 resource "kubernetes_secret" "jenkins-gcr-json" {
   metadata {
     name = "jenkins-gcr-json"
@@ -128,7 +139,6 @@ resource "kubernetes_secret" "jenkins-gcr-json" {
 
   data = {
     "jenkins-gcr.json" = "${file ("${var.storage_creds_file}")}"
-    "gclod_project_name.txt"     = "${var.project_name}"
   }
   depends_on = ["kubernetes_namespace.jenkins"]
 }

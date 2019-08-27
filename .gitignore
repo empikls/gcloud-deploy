@@ -8,6 +8,7 @@
 # Crash log files
 crash.log
 kubeconfig
+jenkins-chart.yaml
 #jenkins-chart.yaml
 .ansiblevault
 
