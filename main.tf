@@ -129,6 +129,7 @@ resource "kubernetes_config_map" "jenkins-example" {
   data = {
     gcloud-project = "${var.project_name}"
   }
+  depends_on = ["kubernetes_namespace.jenkins"]
 }
 
 resource "kubernetes_secret" "jenkins-gcr-json" {
