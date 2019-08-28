@@ -47,3 +47,6 @@ resource "random_id" "password" {
   byte_length = 16
 }
 
+resource "random_id" "password_jenkins" {
+  byte_length = 24
+}

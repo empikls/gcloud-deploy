@@ -28,7 +28,7 @@ resource "google_container_node_pool" "primary" {
   node_count = 2
 
   node_config {
-    preemptible  = false
+    preemptible  = true
     machine_type = "${var.machine_type}"
 
     metadata = {
@@ -54,7 +54,8 @@ provider "kubernetes" {
 }
 
 data "template_file" "kubeconfig" {
-  template = file("kubeconfig-template.yaml")
+  template = file("templates/kubeconfig-template.yaml")
+  //template = file("kubeconfig-template.yaml")
 
   vars = {
     cluster_name    = google_container_cluster.primary.name
@@ -67,9 +68,23 @@ data "template_file" "kubeconfig" {
   }
 }
 
+data "template_file" "jenkins_chart" {
+  template = file("templates/jenkins-chart-template.yaml")
+  //template = file("kubeconfig-template.yaml")
+
+  vars = {
+    jenkins_password = "${random_id.password_jenkins.hex}"
+  }
+}
+
 resource "local_file" "kubeconfig" {
   content  = data.template_file.kubeconfig.rendered
   filename = "kubeconfig"
+}
+
+resource "local_file" "jenkins_chart" {
+  content  = data.template_file.jenkins_chart.rendered
+  filename = "jenkins-chart.yaml"
 }
 
 resource "kubernetes_namespace" "prod" {
@@ -105,6 +120,18 @@ resource "kubernetes_secret" "credentials" {
   depends_on = ["kubernetes_namespace.jenkins"]
 }
 
+resource "kubernetes_config_map" "jenkins-example" {
+  metadata {
+    name = "jenkins-vars"
+    namespace = "jenkins"
+  }
+
+  data = {
+    gcloud-project = "${var.project_name}"
+  }
+  depends_on = ["kubernetes_namespace.jenkins"]
+}
+
 resource "kubernetes_secret" "jenkins-gcr-json" {
   metadata {
     name = "jenkins-gcr-json"
@@ -128,5 +155,5 @@ helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kube
 helm install --name jenkins --namespace jenkins -f jenkins-chart.yaml stable/jenkins --wait --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
-  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.jenkins"]
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.jenkins","kubernetes_secret.jenkins-gcr-json"]
 }

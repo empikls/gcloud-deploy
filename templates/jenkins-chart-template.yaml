@@ -6,7 +6,7 @@ master:
   overwriteConfig: true
 
   adminUser: jadmin
-  adminPassword: ItCiF4CF/U/uH2qG
+  adminPassword: ${jenkins_password}
 
   installPlugins:
     - kubernetes:1.18.1
@@ -22,13 +22,22 @@ master:
     - pam-auth:1.5.1
     - docker-workflow:1.19
     - docker-plugin:1.1.7
-    - github-organization-folder:1.6
+    - github-branch-source:2.5.6
     - google-container-registry-auth:0.3
     - google-oauth-plugin:0.8
   
   serviceAccount:
     create: false
     name: jenkins-sa  
+
+#  initContainerEnv:
+#    - name: testpr
+#      value: "gcpssproject-248009"
+    
+#  containerEnv:
+#    - name: testpr
+#      value: "gcpssproject-248009"
+  
 
   targetPort: 8080
   servicePort: 8080
@@ -119,25 +128,15 @@ master:
         <buildStrategies/>
       </jenkins.branch.OrganizationFolder>
 
-agent:
-  enabled: true
-  image: "comarada/jenkins-slave-doc-py"
-  #image: "jenkins/jnlp-slave"
-  tag: "v0.2"
-  resources:
-    requests:
-      cpu: null
-      memory: null
-    limits:
-      cpu: null
-      memory: null
-  volumes: 
-    - type: HostPath
-      mountPath: /var/run/docker.sock
-      hostPath: /var/run/docker.sock
- 
+#agent:
+#  envVars:
+#   - name: "testproject"
+#     value: "gcpssproject-248009"
+     
 
 #to allow jenkins create slave pods
 rbac:
   create: true
 
+serviceAccountAgent:
+  create: false
