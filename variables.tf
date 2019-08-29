@@ -27,14 +27,6 @@ variable "database_instance_name" {
   default = "main-postgres"
 }
 
-variable "database_prod_user_pass" {
-  default = "8c7yoI66pd"
-}
-
-variable "database_test_user_pass" {
-  default = "8c7yoI66pd"
-}
-
 variable "kubernetes_ver" {
   default = "1.13.7-gke.8"
 }
