@@ -31,6 +31,10 @@ variable "kubernetes_ver" {
   default = "1.13.7-gke.8"
 }
 
+variable "logicapp_conf_query_url" {
+  default = "http://queryapp.dev.svc:5003/query/yml_data"
+}
+
 resource "random_id" "username" {
   byte_length = 14
 }

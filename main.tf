@@ -132,6 +132,18 @@ resource "kubernetes_config_map" "jenkins-example" {
   depends_on = ["kubernetes_namespace.jenkins"]
 }
 
+resource "kubernetes_config_map" "logicapp-env-conf" {
+  metadata {
+    name = "logicapp-env-vars"
+    namespace = "dev"
+  }
+
+  data = {
+    logicapp-app-query-url = "${var.logicapp_conf_query_url}"
+  }
+  depends_on = ["kubernetes_namespace.dev"]
+}
+
 resource "kubernetes_secret" "jenkins-gcr-json" {
   metadata {
     name = "jenkins-gcr-json"
