@@ -27,16 +27,12 @@ variable "database_instance_name" {
   default = "main-postgres"
 }
 
-variable "database_prod_user_pass" {
-  default = "8c7yoI66pd"
-}
-
-variable "database_test_user_pass" {
-  default = "8c7yoI66pd"
-}
-
 variable "kubernetes_ver" {
   default = "1.13.7-gke.8"
+}
+
+variable "logicapp_conf_query_url" {
+  default = "http://queryapp.dev.svc:5003/query/yml_data"
 }
 
 resource "random_id" "username" {
