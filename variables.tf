@@ -13,6 +13,10 @@ variable "storage_creds_file" {
   default = "~/.gcloud/google-storage-admin.json"
 }
 
+variable "logicapp_repository" {
+  default = "https://github.com/kv-053-devops/logicapp/"
+}
+
 variable "location" {
   default = "europe-west1"
 }
