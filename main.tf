@@ -68,24 +68,24 @@ data "template_file" "kubeconfig" {
   }
 }
 
-data "template_file" "jenkins_chart" {
-  template = file("templates/jenkins-chart-template.yaml")
-  //template = file("kubeconfig-template.yaml")
-
-  vars = {
-    jenkins_password = "${random_id.password_jenkins.hex}"
-  }
-}
+#data "template_file" "spinnaker_chart" {
+#  template = file("templates/spinnaker-chart-template.yaml")
+#  //template = file("kubeconfig-template.yaml")
+#
+#  vars = {
+#    spinnaker_password = "${random_id.password_spinnaker.hex}"
+#  }
+#}
 
 resource "local_file" "kubeconfig" {
   content  = data.template_file.kubeconfig.rendered
   filename = "kubeconfig"
 }
 
-resource "local_file" "jenkins_chart" {
-  content  = data.template_file.jenkins_chart.rendered
-  filename = "jenkins-chart.yaml"
-}
+#resource "local_file" "spinnaker_chart" {
+#  content  = data.template_file.spinnaker_chart.rendered
+#  filename = "spinnaker-chart.yaml"
+#}
 
 resource "kubernetes_namespace" "prod" {
   metadata {
@@ -101,9 +101,9 @@ resource "kubernetes_namespace" "dev" {
   depends_on = ["google_container_node_pool.primary"]
 }
 
-resource "kubernetes_namespace" "jenkins" {
+resource "kubernetes_namespace" "spinnaker" {
   metadata {
-    name = "jenkins"
+    name = "spinnaker"
   }
   depends_on = ["google_container_node_pool.primary"]
 }
@@ -111,25 +111,25 @@ resource "kubernetes_namespace" "jenkins" {
 resource "kubernetes_secret" "credentials" {
   metadata {
     name = "scredentials"
-    namespace = "jenkins" 
+    namespace = "spinnaker" 
   }
 
   data = {
     "credentials.xml" = "${file("${path.module}./credentials-jenk/credentials.xml")}"
   }
-  depends_on = ["kubernetes_namespace.jenkins"]
+  depends_on = ["kubernetes_namespace.spinnaker"]
 }
 
-resource "kubernetes_config_map" "jenkins-example" {
+resource "kubernetes_config_map" "spinnaker-example" {
   metadata {
-    name = "jenkins-vars"
-    namespace = "jenkins"
+    name = "spinnaker-vars"
+    namespace = "spinnaker"
   }
 
   data = {
     gcloud-project = "${var.project_name}"
   }
-  depends_on = ["kubernetes_namespace.jenkins"]
+  depends_on = ["kubernetes_namespace.spinnaker"]
 }
 
 resource "kubernetes_config_map" "logicapp-env-conf" {
@@ -144,28 +144,27 @@ resource "kubernetes_config_map" "logicapp-env-conf" {
   depends_on = ["kubernetes_namespace.dev"]
 }
 
-resource "kubernetes_secret" "jenkins-gcr-json" {
+resource "kubernetes_secret" "spinnaker-gcr-json" {
   metadata {
-    name = "jenkins-gcr-json"
-    namespace = "jenkins"
+    name = "spinnaker-gcr-json"
+    namespace = "spinnaker"
   }
 
   data = {
-    "jenkins-gcr.json" = "${file ("${var.storage_creds_file}")}"
+    "spinnaker-gcr.json" = "${file ("${var.storage_creds_file}")}"
   }
-  depends_on = ["kubernetes_namespace.jenkins"]
+  depends_on = ["kubernetes_namespace.spinnaker"]
 }
 
-resource "null_resource" "configure_tiller_jenkins" {
+resource "null_resource" "configure_tiller_spinnaker" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
-kubectl --namespace=jenkins --kubeconfig=kubeconfig create secret generic secrets --from-file=${path.module}./credentials-jenk/secrets/master.key  --from-file=${path.module}./credentials-jenk/secrets/hudson.util.Secret
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
-kubectl apply -f create-jenkins-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
+kubectl apply -f create-spinnaker-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
-helm install --name jenkins --namespace jenkins -f jenkins-chart.yaml stable/jenkins --wait --kubeconfig=${local_file.kubeconfig.filename}
+helm install --name spinnaker -f values.yml stable/spinnaker --namespace=spinnaker --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
-  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.jenkins","kubernetes_secret.jenkins-gcr-json"]
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","kubernetes_secret.spinnaker-gcr-json"]
 }
