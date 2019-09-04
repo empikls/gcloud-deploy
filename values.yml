@@ -129,8 +129,8 @@ kubeConfig:
 
 # Change this if youd like to expose Spinnaker outside the cluster
 ingress:
-  enabled: true
-  #enabled: false
+#  enabled: true
+  enabled: false
   # host: spinnaker.example.org
   # annotations:
     # ingress.kubernetes.io/ssl-redirect: 'true'
