@@ -25,7 +25,7 @@ resource "google_container_node_pool" "primary" {
   project     = "${var.project_name}"
   location   = "${var.location}-b"
   cluster    = "${google_container_cluster.primary.name}"
-  node_count = 2
+  node_count = 3
 
   node_config {
     preemptible  = true
@@ -161,9 +161,63 @@ resource "null_resource" "configure_tiller_spinnaker" {
     command = <<LOCAL_EXEC
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
-kubectl apply -f create-spinnaker-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
-helm install --name spinnaker -f values.yml stable/spinnaker --namespace=spinnaker --kubeconfig=${local_file.kubeconfig.filename}
+export PROJECT_ID=$(gcloud info --format='value(config.project)')
+export BUCKET=${PROJECT_ID}-spinnaker-config
+export SA_JSON=$(cat /home/ash/.gcloud/spinnaker-service-account.json)
+kubectl create secret generic --from-file=kubeconfig spin-kubeconfig --kubeconfig=kubeconfig
+cat > spinnaker-config.yaml <<EOF
+gcs:
+  enabled: true
+  bucket: $BUCKET
+  project: $PROJECT_ID
+  jsonKey: '$SA_JSON'
+
+dockerRegistries:
+- name: gcr
+  address: https://gcr.io
+  username: _json_key
+  password: '$SA_JSON'
+  email: 1234@5678.com
+
+# Disable minio as the default storage backend
+minio:
+  enabled: false
+
+jenkins:
+  enabled: false
+
+# Configure Spinnaker to enable GCP services
+halyard:
+  spinnakerVersion: 1.12.5
+  image:
+    tag: 1.16.0
+  additionalScripts:
+    create: true
+    data:
+      enable_gcs_artifacts.sh: |-
+        \$HAL_COMMAND config artifact gcs account add gcs-$PROJECT_ID --json-path /opt/gcs/key.json
+        \$HAL_COMMAND config artifact gcs enable
+      enable_pubsub_triggers.sh: |-
+        \$HAL_COMMAND config pubsub google enable
+        \$HAL_COMMAND config pubsub google subscription add gcr-triggers \
+          --subscription-name gcr-triggers \
+          --json-path /opt/gcs/key.json \
+          --project $PROJECT_ID \
+          --message-format GCR
+
+kubeConfig:
+  enabled: true
+  secretName: spin-kubeconfig
+  secretKey: kubeconfig
+  contexts:
+  - gke-gevops
+  deploymentContext: gke-gevops
+  omittedNameSpaces:
+  - kube-system
+  - kube-public
+EOF
+helm install -n spin stable/spinnaker -f spinnaker-config.yaml --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
   depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","kubernetes_secret.spinnaker-gcr-json"]

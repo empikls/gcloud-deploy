@@ -19,7 +19,7 @@ variable "location" {
 
 variable "machine_type" {
 //  default = "g1-small"
-  default = "n1-standard-1"
+  default = "n1-standard-2"
 }
 
 // Database configuration
