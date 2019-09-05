@@ -71,9 +71,10 @@ data "template_file" "spinnaker_chart" {
   template = file("templates/spinnaker-chart-template.yaml")
 
   vars = {
-    google_service_acc_spinnaker = "${file(var.spinnaker_service_account)}"
     google_project_name = "${var.project_name}"
-   # google_subscription_name =
+    google_spin_bucket_name = "${google_storage_bucket.spinnaker-store.name}"
+    google_subscription_name = "${google_pubsub_subscription.spinnaker_pubsub_subscription.name}"
+    google_spin_sa_key = "${base64decode(google_service_account_key.spinnaker-store-sa-key.private_key)}"
 
   }
 }
@@ -87,6 +88,59 @@ resource "local_file" "spinnaker_chart" {
   content  = data.template_file.spinnaker_chart.rendered
   filename = "spinnaker-chart.yaml"
 }
+
+resource "google_service_account" "spinnaker-store-sa" {
+  account_id   = "spinnaker-store-sa-id"
+  display_name = "Spinnaker-store-sa"
+  # depends_on = ["google_storage_bucket.spinnaker-store"]
+}
+resource "google_service_account_key" "spinnaker-store-sa-key" {
+  service_account_id = "${google_service_account.spinnaker-store-sa.name}"
+  public_key_type = "TYPE_X509_PEM_FILE"
+}
+resource "google_storage_bucket" "spinnaker-store" {
+  name     = "${var.project_name}-spinnaker-conf"
+  location = "EU"
+}
+
+resource "google_storage_bucket_iam_binding" "spinnaker-bucket-iam" {
+  bucket = "${google_storage_bucket.spinnaker-store.name}"
+  role        = "roles/storage.admin"
+
+  members = [
+    "serviceAccount:${google_service_account.spinnaker-store-sa.email}",
+  ]
+}
+
+//resource "google_cloudbuild_trigger" "logicapp-trigger" {
+//  trigger_template {
+//    branch_name = "master"
+//    repo_name   = "github_kv-053-devops_logicapp"
+//  }
+//  description = "Trigger Git repository ${var.logicapp_repository}"
+//  filename = "cloudbuild.yaml"
+//}
+
+resource "google_pubsub_subscription" "spinnaker_pubsub_subscription" {
+  name  = "spinnaker-subscription"
+  topic = "projects/${var.project_name}/topics/cloud-builds"
+
+  message_retention_duration = "604800s"
+  ack_deadline_seconds = 20
+  expiration_policy {
+    ttl = "2592000s"
+  }
+
+}
+
+resource "google_pubsub_subscription_iam_binding" "spinnaker_pubsub_iam_read" {
+  subscription = "${google_pubsub_subscription.spinnaker_pubsub_subscription.name}"
+  role         = "roles/pubsub.subscriber"
+  members      = [
+    "serviceAccount:${google_service_account.spinnaker-store-sa.email}",
+  ]
+}
+
 
 resource "kubernetes_namespace" "prod" {
   metadata {
@@ -109,18 +163,6 @@ resource "kubernetes_namespace" "spinnaker" {
   depends_on = ["google_container_node_pool.primary"]
 }
 
-resource "kubernetes_config_map" "spinnaker-example" {
-  metadata {
-    name = "spinnaker-vars"
-    namespace = "spinnaker"
-  }
-
-  data = {
-    gcloud-project = "${var.project_name}"
-  }
-  depends_on = ["kubernetes_namespace.spinnaker"]
-}
-
 resource "kubernetes_config_map" "logicapp-env-conf" {
   metadata {
     name = "logicapp-env-vars"
@@ -139,8 +181,8 @@ resource "null_resource" "configure_tiller_spinnaker" {
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
-helm install -n spin stable/spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
+helm install -n spin stable/spinnaker --namespace spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
-  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart"]
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart","google_storage_bucket_iam_binding.spinnaker-bucket-iam","google_pubsub_subscription_iam_binding.spinnaker_pubsub_iam_read"]
 }
