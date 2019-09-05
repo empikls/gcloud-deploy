@@ -10,6 +10,7 @@ crash.log
 kubeconfig
 jenkins-chart.yaml
 spinnaker-config.yaml
+spinnaker-chart.yaml
 #jenkins-chart.yaml
 .ansiblevault
 
