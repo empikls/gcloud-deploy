@@ -55,7 +55,6 @@ provider "kubernetes" {
 
 data "template_file" "kubeconfig" {
   template = file("templates/kubeconfig-template.yaml")
-  //template = file("kubeconfig-template.yaml")
 
   vars = {
     cluster_name    = google_container_cluster.primary.name
@@ -68,24 +67,26 @@ data "template_file" "kubeconfig" {
   }
 }
 
-#data "template_file" "spinnaker_chart" {
-#  template = file("templates/spinnaker-chart-template.yaml")
-#  //template = file("kubeconfig-template.yaml")
-#
-#  vars = {
-#    spinnaker_password = "${random_id.password_spinnaker.hex}"
-#  }
-#}
+data "template_file" "spinnaker_chart" {
+  template = file("templates/spinnaker-chart-template.yaml")
+
+  vars = {
+    google_service_acc_spinnaker = "${file(var.spinnaker_service_account)}"
+    google_project_name = "${var.project_name}"
+   # google_subscription_name =
+
+  }
+}
 
 resource "local_file" "kubeconfig" {
   content  = data.template_file.kubeconfig.rendered
   filename = "kubeconfig"
 }
 
-#resource "local_file" "spinnaker_chart" {
-#  content  = data.template_file.spinnaker_chart.rendered
-#  filename = "spinnaker-chart.yaml"
-#}
+resource "local_file" "spinnaker_chart" {
+  content  = data.template_file.spinnaker_chart.rendered
+  filename = "spinnaker-chart.yaml"
+}
 
 resource "kubernetes_namespace" "prod" {
   metadata {
@@ -106,18 +107,6 @@ resource "kubernetes_namespace" "spinnaker" {
     name = "spinnaker"
   }
   depends_on = ["google_container_node_pool.primary"]
-}
-
-resource "kubernetes_secret" "credentials" {
-  metadata {
-    name = "scredentials"
-    namespace = "spinnaker" 
-  }
-
-  data = {
-    "credentials.xml" = "${file("${path.module}./credentials-jenk/credentials.xml")}"
-  }
-  depends_on = ["kubernetes_namespace.spinnaker"]
 }
 
 resource "kubernetes_config_map" "spinnaker-example" {
@@ -144,25 +133,14 @@ resource "kubernetes_config_map" "logicapp-env-conf" {
   depends_on = ["kubernetes_namespace.dev"]
 }
 
-resource "kubernetes_secret" "spinnaker-gcr-json" {
-  metadata {
-    name = "spinnaker-gcr-json"
-    namespace = "spinnaker"
-  }
-
-  data = {
-    "spinnaker-gcr.json" = "${file ("${var.storage_creds_file}")}"
-  }
-  depends_on = ["kubernetes_namespace.spinnaker"]
-}
-
 resource "null_resource" "configure_tiller_spinnaker" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
+helm install -n spin stable/spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
-  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","kubernetes_secret.spinnaker-gcr-json"]
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart"]
 }

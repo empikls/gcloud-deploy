@@ -13,6 +13,10 @@ variable "storage_creds_file" {
   default = "~/.gcloud/google-storage-admin.json"
 }
 
+variable "spinnaker_service_account" {
+ default = "/home/ash/.gcloud/spinnaker-service-account.json" 
+}
+
 variable "location" {
   default = "europe-west1"
 }

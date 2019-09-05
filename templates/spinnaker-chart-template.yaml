@@ -1,0 +1,43 @@
+gcs:
+  enabled: true
+  bucket: ${google_project_name}-spinnaker-config
+  project: ${google_project_name}
+  jsonKey: '${google_service_acc_spinnaker}'
+
+dockerRegistries:
+- name: gcr
+  address: https://gcr.io
+  username: _json_key
+  password: '${google_service_acc_spinnaker}'
+  email: 1234@5678.com
+
+# Disable minio as the default storage backend
+minio:
+  enabled: false
+
+jenkins:
+  enabled: false
+
+# Configure Spinnaker to enable GCP services
+halyard:
+  spinnakerVersion: 1.12.5
+  image:
+    tag: 1.16.0
+  additionalScripts:
+    create: true
+    data:
+      enable_gcs_artifacts.sh: |-
+        $HAL_COMMAND config artifact gcs account add gcs-${google_project_name} --json-path /opt/gcs/key.json
+        $HAL_COMMAND config artifact gcs enable
+      enable_pubsub_triggers.sh: |-
+        $HAL_COMMAND config pubsub google enable
+        $HAL_COMMAND config pubsub google subscription add google_subscription_name --subscription-name google_subscription_name --json-path /opt/gcs/key.json --project ${google_project_name} --message-format GCB
+
+kubeConfig:
+  enabled: false
+
+serviceAccount:
+  create: true
+  halyardName:
+  spinnakerName:
+
