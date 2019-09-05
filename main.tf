@@ -101,6 +101,10 @@ resource "google_service_account_key" "spinnaker-store-sa-key" {
 resource "google_storage_bucket" "spinnaker-store" {
   name     = "${var.project_name}-spinnaker-conf"
   location = "EU"
+  force_destroy = true
+//  lifecycle {
+//    prevent_destroy = true
+//  }
 }
 
 resource "google_storage_bucket_iam_binding" "spinnaker-bucket-iam" {
