@@ -117,7 +117,7 @@ resource "google_storage_bucket_iam_binding" "spinnaker-bucket-iam" {
 //    branch_name = "master"
 //    repo_name   = "github_kv-053-devops_logicapp"
 //  }
-//  description = "Trigger Git repository ${var.logicapp_repository}"
+//  description = "Trigger Git repository github_kv-053-devops_logicapp"
 //  filename = "cloudbuild.yaml"
 //}
 
