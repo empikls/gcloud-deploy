@@ -6,7 +6,7 @@ gcs:
 
 dockerRegistries:
 - name: gcr
-  address: https://eu.gcr.io
+  address: https://gcr.io
   username: _json_key
   password: '${google_spin_sa_key}'
   email: 1234@5678.com
