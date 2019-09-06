@@ -116,14 +116,14 @@ resource "google_storage_bucket_iam_binding" "spinnaker-bucket-iam" {
   ]
 }
 
-//resource "google_cloudbuild_trigger" "logicapp-trigger" {
-//  trigger_template {
-//    branch_name = "master"
-//    repo_name   = "github_kv-053-devops_logicapp"
-//  }
-//  description = "Trigger Git repository github_kv-053-devops_logicapp"
-//  filename = "cloudbuild.yaml"
-//}
+resource "google_cloudbuild_trigger" "logicapp-trigger" {
+  trigger_template {
+    branch_name = "master"
+    repo_name   = "github_kv-053-devops_logicapp"
+  }
+  description = "Trigger Git repository github_kv-053-devops_logicapp"
+  filename = "cloudbuild.yaml"
+}
 
 resource "google_pubsub_subscription" "spinnaker_pubsub_subscription" {
   name  = "spinnaker-subscription"
