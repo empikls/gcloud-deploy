@@ -20,9 +20,10 @@ jenkins:
 
 # Configure Spinnaker to enable GCP services
 halyard:
-  spinnakerVersion: 1.12.5
+  spinnakerVersion: 1.16.0
   image:
-    tag: 1.16.0
+    tag: 1.23.2
+    #tag: 1.16.0
   additionalScripts:
     create: true
     data:
@@ -34,10 +35,16 @@ halyard:
         $HAL_COMMAND config pubsub google subscription add ${google_subscription_name} --subscription-name ${google_subscription_name} --json-path /opt/gcs/key.json --project ${google_project_name} --message-format GCB
 
 kubeConfig:
-  enabled: false
+  enabled: true
+  secretName: spin-kubeconfig
+  secretKey: spinnaker-kubeconfig
+  contexts:
+  - core
+  deploymentContext: core
 
-serviceAccount:
-  create: true
-  halyardName:
-  spinnakerName:
+#serviceAccount:
+#  create: false
+#  create: true
+#  halyardName:
+#  spinnakerName:
 

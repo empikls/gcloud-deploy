@@ -11,7 +11,10 @@ kubeconfig
 jenkins-chart.yaml
 spinnaker-config.yaml
 spinnaker-chart.yaml
+create-spin-kub-file.sh
 #jenkins-chart.yaml
+spinnaker-kubeconfig
+*.crt
 .ansiblevault
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most

@@ -169,7 +169,14 @@ data "template_file" "spinnaker_chart" {
     google_spin_bucket_name = "${google_storage_bucket.spinnaker-store.name}"
     google_subscription_name = "${google_pubsub_subscription.spinnaker_pubsub_subscription.name}"
     google_spin_sa_key = "${base64decode(google_service_account_key.spinnaker-store-sa-key.private_key)}"
+  }
+}
 
+data "template_file" "spinnaker_install_sh" {
+  template = file("templates/create-spin-kub-file.sh-template")
+
+  vars = {
+    cluster_name = "${var.cluster_name}"
   }
 }
 
@@ -181,6 +188,11 @@ resource "local_file" "kubeconfig" {
 resource "local_file" "spinnaker_chart" {
   content  = data.template_file.spinnaker_chart.rendered
   filename = "spinnaker-chart.yaml"
+}
+
+resource "local_file" "spinnaker_install_sh" {
+  content  = data.template_file.spinnaker_install_sh.rendered
+  filename = "create-spin-kub-file.sh"
 }
 
 resource "google_service_account" "spinnaker-store-sa" {
@@ -275,11 +287,12 @@ resource "kubernetes_config_map" "logicapp-env-conf" {
 resource "null_resource" "configure_tiller_spinnaker" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
+bash create-spin-kub-file.sh
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
 helm install -n spin stable/spinnaker --namespace spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
-  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart","google_storage_bucket_iam_binding.spinnaker-bucket-iam","google_pubsub_subscription_iam_binding.spinnaker_pubsub_iam_read"]
+  depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart","google_storage_bucket_iam_binding.spinnaker-bucket-iam","google_pubsub_subscription_iam_binding.spinnaker_pubsub_iam_read","local_file.spinnaker_install_sh"]
 }
