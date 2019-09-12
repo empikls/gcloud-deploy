@@ -93,6 +93,22 @@ variable "logicapp_conf_query_url" {
   default = "http://queryapp.dev.svc:5003/query/yml_data"
 }
 
+variable "frontendapp_app_query_url" {
+  default = "http://logicapp.dev.svc:5002/logic/query_data"
+}
+
+variable "frontendapp_app_settings_url" {
+  default = "http://cfgmanapp.dev.svc:5004/start"
+}
+
+variable "frontendapp_app_settings_save_url" {
+  default = "http://cfgmanapp.dev.svc:5004/save"
+}
+
+variable "queryapp_config_api_url" {
+  default = "http://cfgmanapp.dev.svc:5004/conf/query"
+}
+
 resource "random_id" "username" {
   byte_length = 14
 }

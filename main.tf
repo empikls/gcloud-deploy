@@ -312,6 +312,46 @@ resource "kubernetes_config_map" "logicapp-env-conf" {
   depends_on = ["kubernetes_namespace.dev"]
 }
 
+resource "kubernetes_config_map" "frontendapp-env-conf" {
+  metadata {
+    name = "frontendapp-env-vars"
+    namespace = "dev"
+  }
+
+  data = {
+    app_query_url = "${var.frontendapp_app_query_url}"
+    app_settings_url = "${var.frontendapp_app_settings_url}"
+    app_settings_save_url = "${var.frontendapp_app_settings_save_url}"
+  }
+  depends_on = ["kubernetes_namespace.dev"]
+}
+
+resource "kubernetes_config_map" "queryapp-env-conf" {
+  metadata {
+    name = "queryapp-env-vars"
+    namespace = "dev"
+  }
+
+  data = {
+    config_api_url = "${var.queryapp_config_api_url}"
+  }
+  depends_on = ["kubernetes_namespace.dev"]
+}
+resource "kubernetes_secret" "credentials_db" {
+  metadata {
+    name = "credentials-db"
+    namespace = "dev"
+  }
+
+  data = {
+    db_user_name = "${var.master_user_name}"
+    db_user_pass = "${random_id.password_database.hex}"
+    db_name = module.postgres.db_name
+    db_address = module.postgres.master_private_ip_address
+  }
+  depends_on = ["kubernetes_namespace.dev"]
+}
+
 resource "null_resource" "configure_tiller_spinnaker" {
   provisioner "local-exec" {
     command = <<LOCAL_EXEC
