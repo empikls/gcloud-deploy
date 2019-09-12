@@ -231,6 +231,34 @@ resource "google_cloudbuild_trigger" "logicapp-trigger" {
   filename = "cloudbuild.yaml"
 }
 
+resource "google_cloudbuild_trigger" "frontendapp-trigger" {
+  trigger_template {
+    branch_name = "master"
+    repo_name   = "github_kv-053-devops_frontendapp"
+  }
+  description = "Trigger Git repository github_kv-053-devops_frontendapp"
+  filename = "cloudbuild.yaml"
+}
+
+resource "google_cloudbuild_trigger" "frontendapp-queryapp" {
+  trigger_template {
+    branch_name = "master"
+    repo_name   = "github_kv-053-devops_queryapp"
+  }
+  description = "Trigger Git repository github_kv-053-devops_queryapp"
+  filename = "cloudbuild.yaml"
+}
+
+resource "google_cloudbuild_trigger" "frontendapp-cfgmanapp" {
+  trigger_template {
+    branch_name = "master"
+    repo_name   = "github_kv-053-devops_cfgmanapp"
+  }
+  description = "Trigger Git repository github_kv-053-devops_cfgmanapp"
+  filename = "cloudbuild.yaml"
+}
+
+
 resource "google_pubsub_subscription" "spinnaker_pubsub_subscription" {
   name  = "spinnaker-subscription"
   topic = "projects/${var.project_name}/topics/cloud-builds"
