@@ -16,6 +16,7 @@ create-spin-kub-file.sh
 spinnaker-kubeconfig
 *.crt
 .ansiblevault
+pipeline_spin_*.json
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
 # .tfvars files are managed as part of configuration and so should be included in
