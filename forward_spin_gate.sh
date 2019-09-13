@@ -26,6 +26,6 @@ echo "Applying pipelines"
 
 spin pipeline save --file pipeline_spin_logicapp.json  --gate-endpoint http://localhost:8084 
 spin pipeline save --file pipeline_spin_queryapp.json  --gate-endpoint http://localhost:8084 
-spin pipeline save --file pipeline_spin_cfgmanapp.json  --gate-endpoint http://localhost:8084 
+spin pipeline save --file pipeline_spin_confmanapp.json  --gate-endpoint http://localhost:8084 
 spin pipeline save --file pipeline_spin_frontendapp.json  --gate-endpoint http://localhost:8084 
 
