@@ -17,6 +17,7 @@ spinnaker-kubeconfig
 *.crt
 .ansiblevault
 pipeline_spin_*.json
+core_cluster_ca.crt
 spin
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
