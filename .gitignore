@@ -9,8 +9,15 @@
 crash.log
 kubeconfig
 jenkins-chart.yaml
+spinnaker-config.yaml
+spinnaker-chart.yaml
+create-spin-kub-file.sh
 #jenkins-chart.yaml
+spinnaker-kubeconfig
+*.crt
 .ansiblevault
+pipeline_spin_*.json
+spin
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
 # .tfvars files are managed as part of configuration and so should be included in

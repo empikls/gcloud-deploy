@@ -9,13 +9,12 @@ Terrafrom GKE cluster, Postgres DB installation
   variables.tf
   ```
 ## Before start
-* Prepre Jenskins Chart file for Helm. Open file  "jenkins-chart.yaml" and change admin passrod if needed.
-* Unpack tar archive credentials-jenk.tar.gz into the upper directory. You should have directory structure similar to:
+* Install utilities before terraform launch:
   ``` 
-  $ ls -l 
-  gcloud-deploy <-- terraform git repository
-  credentials-jenk <-- unpacked credentials-jenk.tar.gz 
+  jq
+  spin
   ```
+  read more here https://stedolan.github.io/jq/, https://www.spinnaker.io/setup/spin/
 
 ## How to run
 * Create Google service accout for terraform
@@ -28,4 +27,9 @@ Terrafrom GKE cluster, Postgres DB installation
   ```
   terraform init
   terraform apply
+  ```
+## Issues
+* 'terraform destroy' may fail due to dependencies error. Use bash script to avoid those errors during destroy:
+  ```
+  ./destroy-terraform.sh
   ```
