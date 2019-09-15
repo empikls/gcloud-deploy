@@ -78,7 +78,8 @@ variable "authorized_gae_applications" {
 variable "backup_enabled" {
   description = "Set to false if you want to disable backup."
   type        = bool
-  default     = true
+  default     = false
+  //default     = true
 }
 
 variable "backup_start_time" {
