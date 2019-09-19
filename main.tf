@@ -424,6 +424,8 @@ resource "null_resource" "configure_tiller_spinnaker" {
 bash create-spin-kub-file.sh
 kubectl config use-context ${var.cluster_name} --kubeconfig=${local_file.kubeconfig.filename}
 kubectl apply -f create-helm-service-account.yml --kubeconfig=${local_file.kubeconfig.filename}
+helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+helm repo update
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
 helm install -n spin stable/spinnaker --namespace spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
 helm install banzaicloud-stable/istio --name istio --namespace istio-system  -f ${local_file.istio_chart.filename} --kubeconfig=${local_file.kubeconfig.filename}
