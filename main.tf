@@ -171,9 +171,9 @@ data "template_file" "spinnaker_chart" {
   }
 }
 
-  data "template_file" "istio_chart" {
-  template = file("templates/istio-chart-template.yaml")
-}
+#data "template_file" "istio_chart" {
+#  template = file("templates/istio-chart-template.yaml")
+#}
   
 data "template_file" "template_pipeline_spin_cfgmanapp" {
   template = file("templates/template_pipeline_spin_cfgmanapp.json")
@@ -428,9 +428,9 @@ helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch
 helm repo update
 helm init --service-account helm --upgrade --wait --kubeconfig=${local_file.kubeconfig.filename}
 helm install -n spin stable/spinnaker --namespace spinnaker -f ${local_file.spinnaker_chart.filename} --timeout 600 --version 1.8.1 --wait --kubeconfig=${local_file.kubeconfig.filename}
-helm install banzaicloud-stable/istio --name istio --namespace istio-system  -f ${local_file.istio_chart.filename} --kubeconfig=${local_file.kubeconfig.filename}
-bash forward_spin_gate.sh
+helm install banzaicloud-stable/istio --name istio --namespace istio-system  -f ./istio-chart-template.yaml --kubeconfig=${local_file.kubeconfig.filename}
 LOCAL_EXEC
   }
   depends_on = ["google_container_node_pool.primary","local_file.kubeconfig","kubernetes_namespace.spinnaker","local_file.spinnaker_chart","local_file.spinnaker_chart","google_storage_bucket_iam_binding.spinnaker-bucket-iam","google_pubsub_subscription_iam_binding.spinnaker_pubsub_iam_read","local_file.spinnaker_install_sh"]
 }
+#bash forward_spin_gate.sh
