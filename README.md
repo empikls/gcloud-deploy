@@ -15,7 +15,10 @@ Terrafrom GKE cluster, Postgres DB installation
   spin
   ```
   read more here https://stedolan.github.io/jq/, https://www.spinnaker.io/setup/spin/
-
+* add istio repo
+   helm repo add banzaicloud-stable http://kubernetes-charts.banzaicloud.com/branch/master
+   helm repo update
+   
 ## How to run
 * Create Google service accout for terraform
 * Set variables in variables.tf :
