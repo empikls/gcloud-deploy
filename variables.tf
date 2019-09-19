@@ -19,7 +19,7 @@ variable "region" {
 variable "name_prefix" {
   description = "The name prefix for the database instance. Will be appended with a random string. Use lowercase letters, numbers, and hyphens. Start with a letter."
   type        = string
-  default     = "main-postgress-db"
+  default     = "main-postgress-"
 }
 
 variable "master_user_name" {
